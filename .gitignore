@@ -1,3 +1,13 @@
+# Custom ignores
+range-v3
+temp/
+src/
+!src/*.h
+!src/*.hpp
+!src/*.cpp
+!src/*.cxx
+!src/*.cc
+
 # Prerequisites
 *.d
 
