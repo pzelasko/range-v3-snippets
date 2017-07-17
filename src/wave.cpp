@@ -8,6 +8,18 @@
 //
 // Piotr Żelasko 2017
 // <petezor +at+ gmail +dot+ com>
+//
+// Wave file processing pipeline:
+//   + convert input stream to range and start at 44th byte
+//   |-- process pairs of bytes
+//   |-- reconstruct signed short (audio sample) from pair of bytes
+//   |-- convert short to float in range [-1.f, 1.f]
+//   |-- process window_size samples at a time
+//   |-- calculate mean sample value in that window
+//   |-- amplify the sample to match console window and constrain the values to +/- amplitude
+//   |-- construct string "bar" representation
+//   |-- delay printing to the console
+//
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -21,15 +33,23 @@ using namespace ranges;
 using namespace std::literals;
 
 
+// Helper function for sample reconstruction from bytes
 constexpr short bytes2short(unsigned char b1, unsigned char b2){
     return (static_cast<short>(b1) << 8) + static_cast<short>(b2);
 }
 
+// Sanity check
 static_assert(bytes2short(0x0, 0x0) == 0x0);
 static_assert(bytes2short(0x0, 0x1) == 0x1);
 static_assert(bytes2short(0x1, 0x0) == 0x100);
 static_assert(bytes2short(0x1, 0x2) == 0x102);
 
+// Helper function which creates a range transforming requested bar amplitudes
+// to string representations of a bar, using character range concatenation.
+// Example of a bar:
+// ................##############|............................
+// Or:
+// ..............................|#########################...
 auto make_bar(int zero_signal) {
     return view::transform([=](int amp){ 
             return std::string{ view::concat(
@@ -43,6 +63,7 @@ auto make_bar(int zero_signal) {
 }
 
 int main() {
+    // These could be program options
     constexpr auto window_size = 40;
     constexpr auto amplitude = 60.f;
     constexpr auto zero_signal = int(amplitude);

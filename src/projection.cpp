@@ -29,7 +29,7 @@ bool IsNameValid(const string &n) {
 
 int main() {
 
-    // Ranges TS brings new term to STL algorithms: projection.
+    // Ranges TS brings a new term to STL algorithms: projection.
     // Projection is a callable which "preprocesses" the item
     // before the main algorithm is applied.
 
